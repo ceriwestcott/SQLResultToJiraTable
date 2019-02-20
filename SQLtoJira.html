@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+</head>
+
+<body>
+    <div class="jumbotron">
+        <h1 class="display-5">SQL Result to Jira Table</h1>
+        <label for="input">Sql results</label>
+        <textarea id="input" class="form-control" rows="10" cols="100"></textarea>
+        <label for="input">Output results</label>
+
+        <textarea id="output" class="form-control" rows="10" cols="100"></textarea><br>
+        <select id="delimiterSelect" class="form-control">
+            <option value="0">CSV</option>
+            <option value="1">Tab</option>
+        </select>
+        <button id="btn" class="btn btn-primary" type="button">Generate Table</button>
+        <input type="checkbox" id="topRow">Top Row header?<br>
+    </div>
+</body>
+<script>
+    $("#btn").click(function () {
+        var textToChange = $("#input").val().split("\n");
+        var topLineRow = $("#topRow").prop("checked");
+        var delimiterType = $("#delimiterSelect option:selected").val();
+        var jiraTable = "";
+        var index = 0;
+
+        if (topLineRow) {
+            jiraTable += GenerateLine("||", textToChange[0], GetDelimiterType(delimiterType))
+            index = 1;
+        }
+        topLineRow = false;
+        var generatedString = "";
+
+        for (index; index < textToChange.length; index++) {
+            if (!topLineRow) {
+                jiraTable += GenerateLine("|", textToChange[index], GetDelimiterType(delimiterType));
+            }
+        }
+       // Temp commented out til i convert to extension ChangeSelected(jiraTable);
+        $("#output").val(jiraTable);
+    })
+
+    function ChangeSelected(jiraTable) {
+        var txtarea = $("#input");
+        var start = txtarea.prop('selectionStart');
+        var finish = txtarea.prop('selectionEnd');
+        var allText = txtarea.val();
+        var sel = allText.substring(start, finish);
+        var newText = allText.substring(0, start) + jiraTable;
+        txtarea.val(newText);
+    }
+    function GetDelimiterType(delimiterType) {
+        if (delimiterType == 0) {
+            return ",";
+        } else if (delimiterType == 1) {
+            return "\t";
+        }
+    }
+    function GenerateLine(seperator, row, delimiter) {
+        var rowArray = row.split(delimiter);
+        debugger;
+        var rowText = "";
+        $.each(rowArray, function (index, value) {
+            var isLastElement = index == rowArray.length - 1;
+            value = value.replace(/\s/g, '');
+            if (index == 0) {
+                rowText += seperator;
+            }
+            if (isLastElement) {
+                rowText += value + seperator + "\n";
+
+            } else {
+                rowText += value + seperator;
+            }
+        });
+        return rowText;
+    }
+</script>
+</html>
